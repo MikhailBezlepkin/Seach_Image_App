@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">Viewing Images App</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="search">Search</string>
+    <string name="marketing">Тут могла быть ваша реклама</string>
+    <string name="request">Что вы хотите увидеть?</string>
+    <string name="message">Сожалею, но сейчас картинок нет :(</string>
+</resources>
