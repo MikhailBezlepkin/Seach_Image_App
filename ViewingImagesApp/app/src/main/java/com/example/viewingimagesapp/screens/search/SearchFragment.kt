@@ -6,14 +6,15 @@ import android.text.TextWatcher
 import android.view.*
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.viewingimagesapp.*
 import com.example.viewingimagesapp.adapter.ImageAdapter
 import com.example.viewingimagesapp.databinding.FragmentSearchBinding
 import com.example.viewingimagesapp.model.ImagesItem
 
-
 class SearchFragment : Fragment(), ImageAdapter.ClickListener {
+
     lateinit var binding: FragmentSearchBinding
     lateinit var adapter: ImageAdapter
     lateinit var recyclerView: RecyclerView
@@ -31,12 +32,12 @@ class SearchFragment : Fragment(), ImageAdapter.ClickListener {
         super.onViewCreated(view, savedInstanceState)
         binding.btnDelete.visibility = View.GONE
         init()
-/*if(!InternetConnection.checkConnection(requireActivity())==true){
-    binding.searchEd.setText("Internet true")
-}
-        else{
-            binding.searchEd.setText("Internet fALSE")
-        }*/
+
+        if (InternetConnection.checkConnection(requireActivity())) {
+
+        } else {
+            binding.messageTv.text = getString(R.string.internet)
+        }
     }
 
     override fun onItemClick(imagesItem: ImagesItem) {
@@ -50,11 +51,13 @@ class SearchFragment : Fragment(), ImageAdapter.ClickListener {
         val viewModel = ViewModelProvider(requireActivity()).get(SearchViewModel::class.java)
         adapter = ImageAdapter(this)
         recyclerView = binding.rvImages
+
         recyclerView.adapter = adapter
 
         viewModel.myImagesList.observe(viewLifecycleOwner) { list ->
             adapter.setList(list)
         }
+
 
         // Работа с кнопками
         binding.searchEd.addTextChangedListener(object : TextWatcher {
@@ -81,7 +84,7 @@ class SearchFragment : Fragment(), ImageAdapter.ClickListener {
 
         binding.btnSearch.setOnClickListener {
             if (binding.searchEd.text.toString() != "") {
-                viewModel.getImagesVM("${binding.searchEd.text}")
+                viewModel.onQueryChanged("${binding.searchEd.text}")
                 viewModel.myImagesList.observe(viewLifecycleOwner) { list ->
                     adapter.setList(list)
                 }
@@ -91,7 +94,21 @@ class SearchFragment : Fragment(), ImageAdapter.ClickListener {
             binding.searchEd.setText("")
         }
 
-        //настройка скрола
+        //Пагинация
+        val layoutManager = recyclerView.layoutManager
+        if (layoutManager is LinearLayoutManager) {
+            val scrollListener = object : PaginationScrollListener(layoutManager) {
+                override fun loadMoreItems() {
+                    viewModel.uploadPage {
+                        adapter.addList(it)
+                    }
+                }
 
+                override fun isLastPage(): Boolean = viewModel.isLastPage.value ?: false
+
+                override fun isLoading(): Boolean = viewModel.isLoading.value ?: false
+            }
+            recyclerView.addOnScrollListener(scrollListener)
+        }
     }
 }

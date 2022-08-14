@@ -17,7 +17,8 @@ import kotlinx.android.synthetic.main.item_layout.view.*
 
 class ImageAdapter(private val clickListener: ClickListener) :
     RecyclerView.Adapter<ImageAdapter.ImageViewHolder>() {
-    var listImage = emptyList<ImagesItem>()
+
+    private val listImage = ArrayList<ImagesItem>()
 
     class ImageViewHolder(view: View) : RecyclerView.ViewHolder(view)
 
@@ -31,13 +32,7 @@ class ImageAdapter(private val clickListener: ClickListener) :
 
         holder.itemView.item_image.load(listImage[position].urls.small)
 
-
-
-        if (listImage[position].user.name != null) {
-            holder.itemView.item_tv.text = listImage[position].user.name
-        } else {
-            holder.itemView.item_tv.text = position.toString()
-        }
+        holder.itemView.item_tv.text = listImage[position].user.name
 
         holder.itemView.setOnClickListener {
             clickListener.onItemClick(listImage[holder.adapterPosition])
@@ -50,8 +45,16 @@ class ImageAdapter(private val clickListener: ClickListener) :
 
     @SuppressLint("NotifyDataSetChanged")
     fun setList(list: List<ImagesItem>) {
-        listImage = list
+        listImage.clear()
+        listImage.addAll(list)
         notifyDataSetChanged()
+    }
+
+    @SuppressLint("NotifyDataSetChanged")
+    fun addList(list: List<ImagesItem>) {
+        listImage.addAll(list)
+        val newItemStartIndex = listImage.size - list.size
+        notifyItemRangeInserted(newItemStartIndex, list.size)
     }
 
     interface ClickListener {
